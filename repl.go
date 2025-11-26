@@ -9,9 +9,14 @@ import (
 	"github.com/dddaglar/pokedexcli/internal/pokeapi"
 )
 
-func startRepl() {
+type config struct {
+	pokeapiClient pokeapi.Client
+	nextURL       *string
+	previousURL   *string
+}
+
+func startRepl(conf *config) {
 	scanner := bufio.NewScanner(os.Stdin)
-	conf := &config{next: 0, previous: 0}
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
@@ -42,12 +47,6 @@ type cliCommand struct {
 	name        string
 	description string
 	callback    func(*config) error
-}
-
-type config struct {
-	pokeapiClient pokeapi.Client
-	next          int
-	previous      int
 }
 
 func getCommand() map[string]cliCommand {

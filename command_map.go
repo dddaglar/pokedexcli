@@ -1,67 +1,31 @@
 package main
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"strconv"
 )
 
-func viewMap(offset int) error {
-	requrl := "http://pokeapi.co/api/v2/location-area/?offset=" + strconv.Itoa(offset) + "0&limit=20/"
-	client := &http.Client{}
-	resp, err := client.Get(requrl)
+func viewMap(conf *config, url *string) error {
+	locationsResp, err := conf.pokeapiClient.ListLocations(url)
 	if err != nil {
 		return err
 	}
-	body, err := io.ReadAll(resp.Body)
-	if resp.StatusCode > 299 {
-		return fmt.Errorf("response failed with status code %d and message %s", resp.StatusCode, string(body))
-	}
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	conf.nextURL = locationsResp.Next
+	conf.previousURL = locationsResp.Previous
 
-	type LocAreas struct {
-		Results []struct {
-			Name string `json:"name"`
-		} `json:"results"`
-		Next     string `json:"next"`
-		Previous string `json:"previous"`
-	}
-	var locAreas LocAreas
-	json.Unmarshal(body, &locAreas)
-	for _, area := range locAreas.Results {
-		fmt.Println(area.Name)
+	for _, location := range locationsResp.Results {
+		fmt.Println(location.Name)
 	}
 	return nil
 }
 
 func commandMap(conf *config) error {
-	if conf.next == 0 && conf.previous == 0 {
-		//first to be printed, print the first page,
-		viewMap(0)
-		conf.next = 20
-		conf.previous = -20
-	} else {
-		//print the page after the current
-		viewMap(conf.next)
-		conf.next += 20
-		conf.previous += 20
-	}
-	return nil
+	return viewMap(conf, conf.nextURL)
 }
 
 func commandMapb(conf *config) error {
-	if (conf.next == 0 && conf.previous == 0) || conf.previous < 0 {
-		fmt.Println("You're on the first page.")
-	} else {
-		//print the prev, arrange the nubers
-		viewMap(conf.previous)
-		conf.next -= 20
-		conf.previous -= 20
+	if conf.previousURL == nil {
+		return errors.New("you're on the first page")
 	}
-	return nil
+	return viewMap(conf, conf.previousURL)
 }

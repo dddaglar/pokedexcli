@@ -23,7 +23,7 @@ func (c *Client) ListLocations(pageURL *string) (LocationAreas, error) {
 		return LocationAreas{}, err
 	}
 	if resp.StatusCode > 299 {
-		return LocationAreas{}, fmt.Errorf("response failed with status code %d and message %s", resp.StatusCode, string(body))
+		return LocationAreas{}, fmt.Errorf("response failed with status code %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
