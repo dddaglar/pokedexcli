@@ -15,8 +15,8 @@ type CacheEntry struct {
 	val       []byte
 }
 
-func NewCache(interval time.Duration) *Cache {
-	cch := &Cache{
+func NewCache(interval time.Duration) Cache {
+	cch := Cache{
 		entries: make(map[string]CacheEntry),
 		mu:      &sync.RWMutex{},
 	}
@@ -37,10 +37,7 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	val, ok := c.entries[key]
-	if ok {
-		return val.val, true
-	}
-	return nil, false
+	return val.val, ok
 }
 
 func (c *Cache) reap(interval time.Duration) {

@@ -6,6 +6,7 @@ import (
 )
 
 func viewMap(conf *config, url *string) error {
+
 	locationsResp, err := conf.pokeapiClient.ListLocations(url)
 	if err != nil {
 		return err
@@ -19,11 +20,11 @@ func viewMap(conf *config, url *string) error {
 	return nil
 }
 
-func commandMap(conf *config) error {
+func commandMap(conf *config, args ...string) error {
 	return viewMap(conf, conf.nextURL)
 }
 
-func commandMapb(conf *config) error {
+func commandMapb(conf *config, args ...string) error {
 	if conf.previousURL == nil {
 		return errors.New("you're on the first page")
 	}
